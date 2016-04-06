@@ -1,0 +1,79 @@
+# Get a decent idea about the steady state performance of an SSD.
+#
+# First we sequentially write the drive. Then we completely
+# overwrite the device again, this time randomly at 4K. The former gives
+# us a good idea of the ideal write performance, you should see flat graph
+# of steady write performance. The latter we would expect to start out at
+# approximately the same rate as the sequential fill, but at some point
+# hit a write cliff and hit steady state. The latency numbers of the steady
+# state also provide a good idea of what kind of latencies to expect when
+# the device is pushed to steady state instead of peak benchmark-like
+# numbers that are usually reported.
+#
+# Note that this is a DESTRUCTIVE test. It operates on the device itself.
+# It's not destructive in the sense that it will ruin the device, but
+# whatever data you have on there will be gone.
+#
+[global]
+ioengine=libaio
+direct=1
+fdatasync=1
+thread
+norandommap
+refill_buffers
+group_reporting
+filename=testfile
+size=1G
+per_job_logs=0
+runtime=60
+
+[sequential-fill]
+description=Sequential fill phase
+rw=write
+iodepth=16
+bs=1M
+
+[random-write-singleuser-steady]
+stonewall
+description=Random write for single user under steady state phase
+rw=randwrite
+bs=4K
+iodepth=1
+numjobs=1
+write_bw_log=fioa-steady-state-singleuser
+write_lat_log=fioa-steady-state-singleuser
+write_iops_log=fioa-steady-state-singleuser
+
+[random-write-qosload-steady]
+stonewall
+description=Random write for qos load under steady state phase
+rw=randwrite
+bs=4K
+iodepth=4
+numjobs=32
+rate_iops=100
+write_bw_log=fioa-steady-state-qosload
+write_lat_log=fioa-steady-state-qosload
+write_iops_log=fioa-steady-state-qosload
+
+[random-write-lightload-steady]
+stonewall
+description=Random write for a light load under steady state phase
+rw=randwrite
+bs=4K
+iodepth=4
+numjobs=1
+write_bw_log=fioa-steady-state-lightload
+write_lat_log=fioa-steady-state-lightload
+write_iops_log=fioa-steady-state-lightload
+
+[random-write-heavyload-steady]
+stonewall
+description=Random write for a heavy load under steady state phase
+rw=randwrite
+bs=4K
+iodepth=32
+numjobs=1
+write_bw_log=fioa-steady-state-heavyload
+write_lat_log=fioa-steady-state-heavyload
+write_iops_log=fioa-steady-stat-heavyload
